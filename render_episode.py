@@ -24,24 +24,23 @@ env = gym_wrapper(gym.make('MiniGrid-FourRooms-v1',
                                                     render_mode="rgb_array"),
                                                     original_obs=True)
 
-with Display(visible=False) as disp:
-    images = []
-    for i in range(len(train_config['topologies'])):
-        obs, _ = env.reset()
+images = []
+for i in range(len(train_config['topologies'])):
+    obs, _ = env.reset()
+    img = env.render()
+    done = False
+    while not done:
+        images.append(img)
+        # retrieve your action here
+        state = obs_to_state(obs)
+        q = find_all_action_values(state[:2], state[2], state[3:5], state[5:], 0.99, size)
+        action = np.array(q).argmax()
+        # action = env.action_space.sample() # for example, just sample a random action
+        obs, reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
         img = env.render()
-        done = False
-        while not done:
-            images.append(img)
-            # retrieve your action here
-            state = obs_to_state(obs)
-            q = find_all_action_values(state[:2], state[2], state[3:5], state[5:], 0.99, size)
-            action = np.array(q).argmax()
-            # action = env.action_space.sample() # for example, just sample a random action
-            obs, reward, terminated, truncated, info = env.step(action)
-            done = terminated or truncated
-            img = env.render()
 
-                
+            
 
 
-    imageio.mimsave('rendered_episode.gif', [np.array(img) for i, img in enumerate(images) if i%1 == 0], duration=200)
+imageio.mimsave('rendered_episode.gif', [np.array(img) for i, img in enumerate(images) if i%1 == 0], duration=200)
