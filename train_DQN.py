@@ -21,7 +21,11 @@ gym.register('MiniGrid-FourRooms-v1', FourRoomsEnv)
 with open('configs/train.pl', 'rb') as file:
     train_config = dill.load(file)
 
+with open('configs/validation_unreachable.pl', 'rb') as file:
+    val_config = dill.load(file)
+
 num_train_configs = len(train_config['topologies'])
+num_val_configs = len(val_config['topologies'])
 
 exp_frac = 1.0
 buffer_size = 500_000
@@ -37,15 +41,16 @@ learning_rate = 5e-4
 n_envs = 50
 device = "cuda" if th.cuda.is_available() else "cpu"
 
+print(device)
 eval_env = make_vec_env('MiniGrid-FourRooms-v1', 
-                        n_envs=1, 
+                        n_envs=2, 
                         seed=0, 
                         vec_env_cls=DummyVecEnv, 
                         wrapper_class=gym_wrapper, 
-                        env_kwargs={'agent_pos': train_config['agent positions'],
-                                    'goal_pos': train_config['goal positions'],
-                                    'doors_pos': train_config['topologies'],
-                                    'agent_dir': train_config['agent directions']})
+                        env_kwargs={'agent_pos': val_config['agent positions'],
+                                    'goal_pos': val_config['goal positions'],
+                                    'doors_pos': val_config['topologies'],
+                                    'agent_dir': val_config['agent directions']})
 
 train_env = make_vec_env('MiniGrid-FourRooms-v1', 
                         n_envs=n_envs, 

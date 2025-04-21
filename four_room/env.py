@@ -129,7 +129,6 @@ class FourRoomsEnv(MiniGridEnv):
             initial_configurations = list(zip(self._agent_pos_list, self._agent_dir_list, self._goal_pos_list, self._doors_pos_list))
             random.shuffle(initial_configurations)
             self._agent_pos_list, self._agent_dir_list, self._goal_pos_list, self._doors_pos_list = zip(*[i for i in initial_configurations])
-
         return super().reset(seed=seed, options=options)
 
 
