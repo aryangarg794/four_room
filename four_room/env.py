@@ -76,10 +76,8 @@ class FourRoomsEnv(MiniGridEnv):
         return valid_agent_pos, valid_goal_pos, valid_doors_pos
 
 
-    def __init__(self, agent_pos=None, agent_dir=None, goal_pos=None, doors_pos=None, max_steps=100, size=9, **kwargs):
+    def __init__(self, agent_pos=None, agent_dir=None, goal_pos=None, doors_pos=None, max_steps=100, size=19, **kwargs):
         """
-            This code is only works for environment size 9
-
             Parameters
             ----------
             agent_pos : list
@@ -117,7 +115,7 @@ class FourRoomsEnv(MiniGridEnv):
             width=self.size,
             height=self.size,
             max_steps=max_steps,
-            highlight=False,
+            highlight=True,
             **kwargs
         )
 
@@ -131,7 +129,6 @@ class FourRoomsEnv(MiniGridEnv):
             initial_configurations = list(zip(self._agent_pos_list, self._agent_dir_list, self._goal_pos_list, self._doors_pos_list))
             random.shuffle(initial_configurations)
             self._agent_pos_list, self._agent_dir_list, self._goal_pos_list, self._doors_pos_list = zip(*[i for i in initial_configurations])
-
         return super().reset(seed=seed, options=options)
 
 
@@ -155,7 +152,8 @@ class FourRoomsEnv(MiniGridEnv):
             doors_pos = (self._rand_int(0, (self.size // 2 - 1)), self._rand_int(0, (self.size // 2 - 1)), self._rand_int(0, (self.size // 2 - 1)), self._rand_int(0, (self.size // 2 - 1)))
             agent_dir = self._rand_int(0, 4)
 
-
+        self.valid_pos = self.valid_positions(self.size)[0]
+        
         # For each row of rooms
         for j in range(0, 2):
             # For each column or rooms
@@ -168,11 +166,13 @@ class FourRoomsEnv(MiniGridEnv):
                 if i + 1 < 2:
                     self.grid.vert_wall(xR, yT, room_h)
                     pos = (xR, yT + 1 + doors_pos[j])
+                    self.valid_pos.append(pos)
                     self.grid.set(*pos, None)
 
                 if j + 1 < 2:
                     self.grid.horz_wall(xL, yB, room_w)
                     pos = (xL + 1 + doors_pos[2 + i], yB)
+                    self.valid_pos.append(pos)
                     self.grid.set(*pos, None)
 
         # Randomize the player start position and orientation
@@ -191,11 +191,36 @@ class FourRoomsEnv(MiniGridEnv):
         else:
             self.place_obj(Goal())
 
-        if self._agent_pos_list is not None:
-            # assumes _gen_grid() is only called once when reset() is called
-            self._list_idx = (self._list_idx + 1) % self._list_size
+        # if self._agent_pos_list is not None:
+        #     # assumes _gen_grid() is only called once when reset() is called
+        #     self._list_idx = (self._list_idx + 1) % self._list_size
+            
+        self.valid_pos = [pos for pos in self.valid_pos if pos != self.goal_pos]
+    
+    def move_valid_pos(self, idx):
+        self.agent_pos = self.valid_pos[idx]
+        self.grid.set(*self.agent_pos, None)
+        self.agent_dir = 0
+        
+    def set_context(self, idx):
+        """Incremement the _list_idx so change the context that we work in. 
 
-
+        Returns:
+            None
+        """
+        self._list_idx = idx % self._list_size
+    
+    @property
+    def context(self):
+        return self._list_idx
+    
+    def set_context(self, idx):
+        assert idx < self._list_size
+        self._list_idx = idx
+        
+    def render(self, highlight_mask, colors):
+        return super().render(highlight_mask, colors)
+        
 class FourRoomsNoRotateEnv(FourRoomsEnv):
 
     """

@@ -40,7 +40,7 @@ Utility functions for turning observations into state or images can be found in 
 ### Train DQN Agent
 Example code for running a [Stable Baselines3](https://stable-baselines3.readthedocs.io/en/master/) DQN agent on the environment can be found in ```train_DQN.py```. In order to run it you additionally need to install:
 ```
-pip install stablebaselines3 tensorboard wandb
+pip install stable-baselines3 tensorboard wandb
 ```
 
 ### Optimal Actions
@@ -50,7 +50,7 @@ from four_room.shortest_path import find_all_action_values
 from four_room.utils import obs_to_state
 
 state = obs_to_state(obs)
-q_values = find_all_action_values(state[:2], state[2], state[3:5], state[5:], 0.99)
+q_values = find_all_action_values(state[:2], state[2], state[3:5], state[5:], 0.99, 19)
 optimal_action = np.argmax(q_values)
 ```
 to find the optimal action in a given state ```obs```.
