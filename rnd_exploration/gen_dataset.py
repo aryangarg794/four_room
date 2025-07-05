@@ -9,22 +9,13 @@ from four_room.shortest_path import find_all_action_values
 from four_room.wrappers import gym_wrapper
 from rnd_exploration.explore_go import ExploreGoDataset, Transition
 from rnd_exploration.rnd import RNDNetwork
+from rnd_exploration.utils import RunningAverage, train_config, test_config, size
 
 gym.register('MiniGrid-FourRooms-v1', FourRoomsEnv)
-size = 19
-with open('configs/train.pl', 'rb') as file:
-    train_config = dill.load(file)
 
-with open('configs/test_reachable.pl', 'rb') as file:
-    test_config = dill.load(file)
-
-with open('configs/validation_unreachable.pl', 'rb') as file:
-    val_config = dill.load(file)
-
-
-def create_explogostar_dataset(dataset_size, save_dir, threshhold, render=False, device='cpu'):
-    # storing exporego* dataset
-    overlapdataset = ExploreGoDataset()
+def create_explogostar_dataset(dataset_size, save_dir, threshhold=3.5, render=False, device='cpu'):
+    print(f'=============Dataset {save_dir} | Size {dataset_size} | Threshold {threshhold}====================')
+    
     
     if render:
         env = gym_wrapper(gym.make(
@@ -49,10 +40,12 @@ def create_explogostar_dataset(dataset_size, save_dir, threshhold, render=False,
             ),
             original_obs=True
         )
-    try:
         
-        rnd_net = RNDNetwork(env, device=device)
+        
+    try:
+        rnd_net = RNDNetwork(env, device=device, lr=1e-5)
         explorego = ExploreGoDataset()
+        avg = RunningAverage()
         imgs = []
         
         ep_highlight_mask = np.zeros((len(train_config['agent positions']), 
@@ -60,7 +53,6 @@ def create_explogostar_dataset(dataset_size, save_dir, threshhold, render=False,
         ep_colors = np.empty_like(ep_highlight_mask, dtype=object)
 
         while len(explorego) <= dataset_size:
-            
             obs, _ = env.reset()
             done = False
             
@@ -70,7 +62,6 @@ def create_explogostar_dataset(dataset_size, save_dir, threshhold, render=False,
             env.unwrapped.move_valid_pos(k)
         
             current_context = env.unwrapped.context
-            print(f'Current size of dataset: {len(explorego):08d} | Current Context {current_context} | Current Uniqueness {explorego.ratio_unique_trans:.4f}', end='\r')
             
             # find optimal trajectory
             past_pos = []
@@ -83,14 +74,24 @@ def create_explogostar_dataset(dataset_size, save_dir, threshhold, render=False,
                 action = q.argmax()
                 rnd_val = rnd_net.get_error(obs, action)
                 
-                if rnd_val <= threshhold:
+                
+                if len(explorego) < 5000:
                     explorego.add_trans(np.array(obs), q)
                     explorego.add(np.array(obs), q, np.array(state))
                     if render: 
                         ep_colors[current_context, agent_pos[0], agent_pos[1]] = (0, 0, 255)
                         ep_highlight_mask[current_context, agent_pos[0], agent_pos[1]] = True
                         past_pos.append(agent_pos)
-                        
+                elif rnd_val >= avg.average + 0.5 * avg.average:
+                    explorego.add_trans(np.array(obs), q)
+                    explorego.add(np.array(obs), q, np.array(state))
+                    if render: 
+                        ep_colors[current_context, agent_pos[0], agent_pos[1]] = (0, 0, 255)
+                        ep_highlight_mask[current_context, agent_pos[0], agent_pos[1]] = True
+                        past_pos.append(agent_pos)
+                
+                rnd_net.observe(obs, action)
+                avg.update(rnd_val)
                 obs_prime, _, terminated, truncated, _ = env.step(action)
                 obs = obs_prime
                 done = terminated or truncated
@@ -99,7 +100,8 @@ def create_explogostar_dataset(dataset_size, save_dir, threshhold, render=False,
             if render:
                 for pos in past_pos:
                     ep_colors[current_context, pos[0], pos[1]] = (51, 0, 102)
-    
+                    
+            print(f'Current size of dataset: {len(explorego):08d} | Current Context {current_context} | Current Uniqueness {explorego.ratio_unique_trans:.4f} | Val {rnd_val:.4f} | Avg {avg.average:.4f}', end='\r')
 
     except KeyboardInterrupt:
         with open(f'action_values/{save_dir}.pl', 'wb') as file:
@@ -113,18 +115,20 @@ def create_explogostar_dataset(dataset_size, save_dir, threshhold, render=False,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--size', type=int, default=10000, help='size of dataset')
-    parser.add_argument('-f', '--dir', type=str, default='untitled', help='name of dataset')
+    parser.add_argument('-s', '--size', type=int, default=25000, help='size of dataset')
+    parser.add_argument('-f', '--dir', type=str, default='star_25k', help='name of dataset')
     parser.add_argument('-d', '--device', type=str, default='cuda', help='device')
     parser.add_argument('-r', '--render', action='store_true', help='render mode')
-    parser.add_argument('-t', '--thresh', type=float, default=float('-inf'), help='threshhold to add')
+    parser.add_argument('-t', '--thresh', type=float, default=0.8, help='threshhold to add')
 
     args = parser.parse_args()
 
     dataset, img = create_explogostar_dataset(
         args.size, 
         args.dir, 
-        args.threshhold, 
+        args.thresh, 
         args.render,
         args.device
     )
+    
+    print(dataset.ratio_unique_trans)

@@ -7,8 +7,9 @@ import gymnasium as gym
 import math
 
 def orthogonal_layer_init(layer, std=np.sqrt(2), bias_const=0.0):
-    th.nn.init.orthogonal_(layer.weight, std)
-    th.nn.init.constant_(layer.bias, bias_const)
+    if hasattr(layer, 'weight'):
+        th.nn.init.orthogonal_(layer.weight, std)
+        th.nn.init.constant_(layer.bias, bias_const)
     return layer
 
 def kaiming_layer_init(layer, std=np.sqrt(2), bias_const=0.0):

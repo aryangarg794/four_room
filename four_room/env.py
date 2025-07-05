@@ -191,9 +191,9 @@ class FourRoomsEnv(MiniGridEnv):
         else:
             self.place_obj(Goal())
 
-        # if self._agent_pos_list is not None:
-        #     # assumes _gen_grid() is only called once when reset() is called
-        #     self._list_idx = (self._list_idx + 1) % self._list_size
+        if self._agent_pos_list is not None:
+            # assumes _gen_grid() is only called once when reset() is called
+            self._list_idx = (self._list_idx + 1) % self._list_size
             
         self.valid_pos = [pos for pos in self.valid_pos if pos != self.goal_pos]
     
