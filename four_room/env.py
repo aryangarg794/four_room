@@ -1,6 +1,7 @@
 from minigrid.core.world_object import Goal
-from minigrid.minigrid_env import MiniGridEnv
-from minigrid.core.grid import Grid
+from four_room.minigrid_env import MiniGridEnv
+from four_room.grid import Grid
+from four_room.objects import AuxGoal
 from minigrid.core.mission import MissionSpace
 from itertools import product
 import random
@@ -96,7 +97,7 @@ class FourRoomsEnv(MiniGridEnv):
         self._goal_pos_list = goal_pos
         self._doors_pos_list = doors_pos
         self._agent_dir_list = agent_dir
-
+        
         # an index into agent_pos, goal_pos and doors_pos with which we will initialise the environment
         self._list_idx = 0
 
@@ -191,9 +192,9 @@ class FourRoomsEnv(MiniGridEnv):
         else:
             self.place_obj(Goal())
 
-        # if self._agent_pos_list is not None:
-        #     # assumes _gen_grid() is only called once when reset() is called
-        #     self._list_idx = (self._list_idx + 1) % self._list_size
+        if self._agent_pos_list is not None:
+            # assumes _gen_grid() is only called once when reset() is called
+            self._list_idx = (self._list_idx + 1) % self._list_size
             
         self.valid_pos = [pos for pos in self.valid_pos if pos != self.goal_pos]
     
@@ -218,10 +219,18 @@ class FourRoomsEnv(MiniGridEnv):
         assert idx < self._list_size
         self._list_idx = idx
         
-    def render(self, highlight_mask, colors):
-        return super().render(highlight_mask, colors)
+    def set_aux(self, aux_pos):
+        aux = AuxGoal()
+        self.put_obj(aux, *aux_pos)
+    
+    def remove_aux(self, aux_pos):
+        self.grid.set(aux_pos[0], aux_pos[1], None)
+        
+    def render(self, highlight_mask, colors, agent_col=(255, 0, 0), target_pos=None):
+        return super().render(highlight_mask, colors, agent_col, target_pos)
         
 class FourRoomsNoRotateEnv(FourRoomsEnv):
+    
 
     """
     ### Description

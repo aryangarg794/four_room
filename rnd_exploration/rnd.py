@@ -7,7 +7,7 @@ import numpy as np
 from typing import Self, List
 from torch import Tensor
 
-from four_room.arch import CNN
+from four_room.arch import CNN, kaiming_layer_init, orthogonal_layer_init
 from four_room.env import FourRoomsEnv
 from four_room.wrappers import gym_wrapper
 
@@ -19,8 +19,9 @@ class BaseNetwork(nn.Module):
         use_action: bool, 
         obs_space: gym.spaces.Box,
         action_space: gym.spaces.Discrete,
-        feature_units: int = 64, 
-        hidden_layers: List = list([512, 1024, 512]), 
+        outdim: int = 1024, 
+        feature_units: int = 2048, 
+        hidden_layers: List = list([2048, 2048, 1024, 1024, 1024]), 
         *args, 
         **kwargs
     ) -> None:
@@ -37,9 +38,11 @@ class BaseNetwork(nn.Module):
         for next_dim, prev_dim in zip(hidden_layers[1:], hidden_layers[:-1]):
             self.net.extend([
                 nn.Linear(prev_dim, next_dim),
-                nn.ReLU()
+                nn.LeakyReLU()
             ])
+        self.net.append(nn.Linear(hidden_layers[-1], outdim))
         self.use_action = use_action
+        self.net.apply(orthogonal_layer_init)
         
     def forward(self: Self, state: Tensor, action: Tensor = None) -> Tensor:
         features = self.cnn(state)
@@ -56,15 +59,20 @@ class RNDNetwork:
         self: Self,
         env: gym.Env,
         use_actions: bool = False,
-        scale: float = 3.5, 
-        lr: float = 1e-3,
+        scale: float = 1, 
+        lr: float = 1e-5,
         device: str = 'cpu',
         *args, 
         **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
         
-        self.target_net = BaseNetwork(use_actions, env.observation_space, env.action_space).to(device)
+        self.target_net = BaseNetwork(
+            use_actions, 
+            env.observation_space, 
+            env.action_space,
+            hidden_layers=[128],
+        ).to(device)
         self.rnd_net = BaseNetwork(use_actions, env.observation_space, env.action_space).to(device)
         
         for param in self.target_net.parameters():
@@ -84,7 +92,7 @@ class RNDNetwork:
             
         preds = self.rnd_net(states, actions)
         targets = self.target_net(states, actions)
-        loss = self.loss(preds, targets).mean()
+        loss = self.loss(preds, targets.detach()).mean()
         
         self.optimizer.zero_grad()
         loss.backward()
