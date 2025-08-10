@@ -1,10 +1,12 @@
 import gymnasium as gym
 import numpy as np 
 import torch 
+import torch.nn as nn
 
 from tqdm import tqdm
 
 from rnd_exploration.utils import RunningAverage
+from rnd_exploration.rnd import RNDNetwork
 from dqn.model import DQN
 
 def train_eps_greedy(
@@ -19,7 +21,7 @@ def train_eps_greedy(
 ):
     metrics = RunningAverage(window_size=25)
     val_rewards = []
-    mse_loss = torch.nn.MSELoss()
+    mse_loss = nn.MSELoss()
     
     obs, _ = env.reset()
     for step in (pbar := tqdm(range(num_timesteps))): 

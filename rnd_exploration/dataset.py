@@ -1,7 +1,7 @@
 from hashlib import sha1
 import numpy as np
 import torch
-from collections import defaultdict
+from collections import defaultdict, deque, OrderedDict
 
 class Dataset:
     
@@ -130,6 +130,32 @@ class ExploreGoDataset(Dataset):
     def ratio_unique_trans(self):
         return len(self.unique_trans) / len(self.trans) if len(self.trans) > 0 else 0.0
     
+class MovingSet:
+    
+    def __init__(
+        self,
+        capacity: int = int(1e5)
+    ):
+        self.size = 0 
+        self.capacity = capacity
+        self.unique_set = OrderedDict()
+        
+    def add(self, obj: object):
+        self.unique_set[obj] = self.unique_set.get(obj, 0) + 1
+        if self.size + 1 > self.capacity: # overflow
+            pair = self.unique_set.popitem(last=False)
+            if pair[1] - 1 > 0:
+                self.unique_set[pair[0]] = pair[1] - 1
+                self.unique_set.move_to_end(pair[0], last=False)
+             
+        self.size = min(self.size + 1, self.capacity)
+        
+    def num_unique(self):
+        return len(self.unique_set)
+    
+    def __repr__(self):
+        return str(self.unique_set.items())
+    
 class ReplayBuffer:
     
     def __init__(
@@ -151,7 +177,7 @@ class ReplayBuffer:
         self.next_states = torch.zeros((self.capacity, state_dim) ,dtype=torch.float, device=self.device)
         self.dones = torch.zeros((self.capacity, 1) ,dtype=torch.int, device=self.device)
         
-        self.trans = []
+        self.trans = deque(maxlen=self.capacity)
         self.unique_trans = set([])
 
     def update(
@@ -195,4 +221,4 @@ class ReplayBuffer:
     
     @property
     def ratio_unique_trans(self):
-        return len(self.unique_trans) / len(self.trans) if len(self.trans) > 0 else 0.0
+        return len(set(self.trans)) / len(self.trans) if len(self.trans) > 0 else 0.0
