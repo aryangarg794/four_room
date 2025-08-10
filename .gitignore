@@ -163,3 +163,6 @@ wandb
 /action_values
 /action_values/random_dataset.pl
 /action_values/test_argmax_dataset.pl
+/rnd_vals.txt
+/rnd_vals250.txt
+/rnd_vals500.txt
