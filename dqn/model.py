@@ -94,8 +94,8 @@ class DQN:
         self.decay_steps = decay_steps
         self.epsilon = start_epsilon
         
-        obs_dim = np.prod(env.observation_space.shape)
-        self.buffer = ReplayBuffer(state_dim=obs_dim, capacity=capacity, num_actions=env.action_space.n)
+        self.buffer = ReplayBuffer(state_dim=env.observation_space.shape, 
+                                   capacity=capacity, num_actions=env.action_space.n)
         self.optimizer = torch.optim.Adam(self.net.parameters(), lr=lr)
         
         self.tau = tau
@@ -106,11 +106,11 @@ class DQN:
             for param, target_param in zip(self.net.parameters(), self.target_net.parameters()):
                 target_param.data.copy_(self.tau * param.data + (1-self.tau) * target_param.data)
             
-    def eval(self, num_runs: int = 10):
+    def eval(self, num_runs: int = 10, seed: int = 0):
         self.net.eval()
         rewards = []
         for _ in range(num_runs):
-            obs, _ = self.val_env.reset()
+            obs, _ = self.val_env.reset(seed=seed)
             done = False
             ep_reward = 0 
             
@@ -129,6 +129,9 @@ class DQN:
 
         self.net.train()
         return np.mean(rewards)
+    
+    def __call__(self, state: torch.Tensor, *args, **kwds):
+        return self.net(state)
     
     # only need this for testing
     def epsilon_greedy(self, state, dim=1):

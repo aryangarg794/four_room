@@ -150,6 +150,7 @@ class MovingSet:
              
         self.size = min(self.size + 1, self.capacity)
         
+    @property
     def num_unique(self):
         return len(self.unique_set)
     
@@ -160,7 +161,7 @@ class ReplayBuffer:
     
     def __init__(
         self, 
-        state_dim, 
+        state_dim: tuple, 
         num_actions: int = 3,
         capacity: int = int(1e5),
         device: str = 'cuda'
@@ -170,15 +171,15 @@ class ReplayBuffer:
         self.pointer = 0
         self.size = 0
         
-        self.states = torch.zeros((self.capacity, state_dim) ,dtype=torch.float, device=self.device)
+        self.states = torch.zeros((self.capacity, *state_dim) ,dtype=torch.float, device=self.device)
         self.q_values = torch.zeros((self.capacity, num_actions) ,dtype=torch.float, device=self.device)
         self.rewards = torch.zeros((self.capacity, 1) ,dtype=torch.float, device=self.device)
         self.actions = torch.zeros((self.capacity, 1) ,dtype=torch.int64, device=self.device)
-        self.next_states = torch.zeros((self.capacity, state_dim) ,dtype=torch.float, device=self.device)
+        self.next_states = torch.zeros((self.capacity, *state_dim) ,dtype=torch.float, device=self.device)
         self.dones = torch.zeros((self.capacity, 1) ,dtype=torch.int, device=self.device)
         
         self.trans = deque(maxlen=self.capacity)
-        self.unique_trans = set([])
+        self.unique_trans = MovingSet(capacity=capacity)
 
     def update(
         self, 
@@ -187,6 +188,7 @@ class ReplayBuffer:
         reward: float,  
         next_state: np.ndarray, 
         done: float | bool,
+        *,
         q_value: np.ndarray | None = None
     ) -> None:
 
@@ -198,7 +200,7 @@ class ReplayBuffer:
         
         if q_value:
             self.q_values[self.pointer] = torch.as_tensor(q_value).to(self.device) 
-            transition = Transition(state, q_value)
+            transition = Transition(state, np.array(q_value))
             self.trans.append(transition)
             self.unique_trans.add(transition)
 
@@ -221,4 +223,4 @@ class ReplayBuffer:
     
     @property
     def ratio_unique_trans(self):
-        return len(set(self.trans)) / len(self.trans) if len(self.trans) > 0 else 0.0
+        return self.unique_trans.num_unique / len(self.trans) if len(self.trans) > 0 else 0.0

@@ -100,7 +100,7 @@ class RNDNetwork:
         
     
     def get_error(self: Self, state: Tensor, action: Tensor = None) -> float:
-        states = self.sanitize(state).reshape(1, *state.shape)
+        states = self.sanitize(state)
         if self.use_actions: 
             action = self.sanitize(action)
             
@@ -112,7 +112,7 @@ class RNDNetwork:
     def sanitize(self: Self, tensor: Tensor) -> Tensor:
         if not isinstance(tensor, Tensor):
             tensor = torch.as_tensor(tensor, device=self.device) 
-        if len(tensor.shape) < 4: 
+        if len(tensor.shape) < 4:  # wont work for non-image inputs !!
             tensor = tensor.unsqueeze(dim=0)
         return tensor
         

@@ -203,14 +203,6 @@ class FourRoomsEnv(MiniGridEnv):
         self.grid.set(*self.agent_pos, None)
         self.agent_dir = 0
         
-    def set_context(self, idx):
-        """Incremement the _list_idx so change the context that we work in. 
-
-        Returns:
-            None
-        """
-        self._list_idx = idx % self._list_size
-    
     @property
     def context(self):
         return self._list_idx
