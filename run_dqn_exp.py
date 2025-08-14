@@ -89,7 +89,6 @@ def train_dqn_rnd(
     env = deepcopy(args.env)
     items_added = 0
     
-    env.get_wrapper_attr('set_context')(np.random.choice([1, 2]))
     obs, _ = env.reset(seed=seed)
     record = False
     state = obs_to_state(obs)
@@ -147,7 +146,7 @@ def train_dqn_rnd(
             env.get_wrapper_attr('set_aux')(aux_pos) # cannot add beforehand or else included in obs
             agent_col = (255, 0, 0) if np.array_equal(target_pos, goal_pos) else (0, 0, 255) 
             
-            imgs.append(env.get_wrapper_attr('render')(highlight_mask=ep_highlight_mask[current_context], 
+            imgs.append(env.unwrapped.render(highlight_mask=ep_highlight_mask[current_context], 
                                         colors=ep_colors[current_context], agent_col=agent_col))
             env.get_wrapper_attr('remove_aux')(aux_pos)
             
@@ -160,7 +159,6 @@ def train_dqn_rnd(
                     ep_colors[current_context, pos[0], pos[1]] = (51, 0, 102)
                 
             past_pos = []
-            env.get_wrapper_attr('set_context')(np.random.choice([1, 2]))
             
             obs, _ = env.reset(seed=seed)
             done = False
@@ -232,17 +230,17 @@ def train_dqn_rnd(
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--timesteps', type=int, default=int(361), help='timesteps')
+    parser.add_argument('-t', '--timesteps', type=int, default=int(2e5), help='timesteps')
     parser.add_argument('-f', '--dir', type=str, default='test', help='save name')
     parser.add_argument('-a', '--alpha', type=float, default=1.5, help='alpha')
     parser.add_argument('-rnd', '--lr_rnd', type=float, default=1e-5, help='lr for rnd')
     parser.add_argument('-ag', '--lr_agent', type=float, default=5e-4, help='lr for dqn agent')
     parser.add_argument('-d', '--device', type=str, default='cuda', help='device')
     parser.add_argument('-r', '--render', action='store_true', help='render mode')
-    parser.add_argument('-s', '--replaysize', type=int, default=int(10), help='size of replay buffer')
+    parser.add_argument('-s', '--replaysize', type=int, default=int(25000), help='size of replay buffer')
     parser.add_argument('-seed', '--seed', type=int, default=0, help='seed')
     parser.add_argument('-b', '--batch_size', type=int, default=512, help='batch size')
-    parser.add_argument('-fr', '--freq', type=int, default=int(1000), help='freq of regression')
+    parser.add_argument('-fr', '--freq', type=int, default=int(25000), help='freq of regression')
     parser.add_argument('-tau', '--tau', type=float, default=0.005, help='tau')
     
     args = parser.parse_args()
@@ -308,4 +306,4 @@ if __name__ == '__main__':
     
     torch.save(results, f'dqn_results/{args.dir}_seed_{args.seed}.pt')
     if args.render:
-        imageio.mimsave(f'renders/rendered_{args.dir}_seed_{args.seed}.gif', [np.array(img) for i, img in enumerate(results['images'][-1000:]) if i%1 == 0], duration=150)
+        imageio.mimsave(f'renders/rendered_{args.dir}_seed_{args.seed}.gif', [np.array(img) for i, img in enumerate(results['images'][-500:]) if i%1 == 0], duration=150)

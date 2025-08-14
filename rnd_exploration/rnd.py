@@ -3,8 +3,6 @@ import dill
 import torch 
 import torch.nn as nn
 import numpy as np
-
-from typing import Self, List
 from torch import Tensor
 
 from four_room.arch import CNN, kaiming_layer_init, orthogonal_layer_init
@@ -15,13 +13,13 @@ from four_room.wrappers import gym_wrapper
 class BaseNetwork(nn.Module):
     
     def __init__(
-        self: Self,
+        self,
         use_action: bool, 
         obs_space: gym.spaces.Box,
         action_space: gym.spaces.Discrete,
         outdim: int = 1024, 
         feature_units: int = 2048, 
-        hidden_layers: List = list([2048, 2048, 1024, 1024, 1024]), 
+        hidden_layers: list = list([2048, 2048, 1024, 1024, 1024]), 
         *args, 
         **kwargs
     ) -> None:
@@ -44,7 +42,7 @@ class BaseNetwork(nn.Module):
         self.use_action = use_action
         self.net.apply(orthogonal_layer_init)
         
-    def forward(self: Self, state: Tensor, action: Tensor = None) -> Tensor:
+    def forward(self, state: Tensor, action: Tensor = None) -> Tensor:
         features = self.cnn(state)
         if self.use_action: 
             inp = torch.cat([features, action], dim=-1)
@@ -56,7 +54,7 @@ class BaseNetwork(nn.Module):
 class RNDNetwork:
     
     def __init__(
-        self: Self,
+        self,
         env: gym.Env,
         use_actions: bool = False,
         scale: float = 1, 
@@ -85,7 +83,7 @@ class RNDNetwork:
         self.loss = nn.MSELoss(reduction='none')
         self.use_actions = use_actions
         
-    def observe(self: Self, states: Tensor, actions: Tensor = None) -> None:
+    def observe(self, states: Tensor, actions: Tensor = None) -> None:
         states = self.sanitize(states)
         if self.use_actions: 
             actions = self.sanitize(actions)
@@ -99,7 +97,7 @@ class RNDNetwork:
         self.optimizer.step()
         
     
-    def get_error(self: Self, state: Tensor, action: Tensor = None) -> float:
+    def get_error(self, state: Tensor, action: Tensor = None) -> float:
         states = self.sanitize(state)
         if self.use_actions: 
             action = self.sanitize(action)
@@ -109,7 +107,7 @@ class RNDNetwork:
                                           self.target_net(states, action)).sum().item()
         
     
-    def sanitize(self: Self, tensor: Tensor) -> Tensor:
+    def sanitize(self, tensor: Tensor) -> Tensor:
         if not isinstance(tensor, Tensor):
             tensor = torch.as_tensor(tensor, device=self.device) 
         if len(tensor.shape) < 4:  # wont work for non-image inputs !!
