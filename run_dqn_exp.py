@@ -57,7 +57,7 @@ def train_dqn_rnd(
     rms = RunningAverage(window_size=window)
     mse_loss = nn.MSELoss()
     os.makedirs('dqn_results', exist_ok=True)
-    imgs = []
+    imgs = deque(maxlen=2500)
     learning_curves = []
     scores = []
     uniqueness = []
@@ -306,4 +306,5 @@ if __name__ == '__main__':
     
     torch.save(results, f'dqn_results/{args.dir}_seed_{args.seed}.pt')
     if args.render:
-        imageio.mimsave(f'renders/rendered_{args.dir}_seed_{args.seed}.gif', [np.array(img) for i, img in enumerate(results['images'][-500:]) if i%1 == 0], duration=150)
+        imgs = list(results['images'])
+        imageio.mimsave(f'renders/rendered_{args.dir}_seed_{args.seed}.gif', [np.array(img) for i, img in enumerate(imgs[-500:]) if i%1 == 0], duration=150)

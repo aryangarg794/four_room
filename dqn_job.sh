@@ -9,3 +9,13 @@
 #SBATCH --output=slurm_%j.out # Set name of output log. %j is the Slurm jobId
 #SBATCH --error=slurm_%j.err # Set name of error log. %j is the Slurm jobId
 #SBATCH --gres=gpu:1
+
+export APPTAINER_HOME=/tudelft.net/staff-umbrella/ExploreGo Star/containers
+export APPTAINER_NAME=image.sif
+export PROJECT_HOME=/tudelft.net/staff-umbrella/ExploreGo Star/four_room
+export RESULTS_DIR=/tudelft.net/staff-umbrella/ExploreGo Star/four_room/dqn_results
+
+if [ ! -f $APPTAINER_HOME/$APPTAINER_NAME ]; then
+    ls $APPTAINER_HOME/$APPTAINER_NAME
+    exit 1
+fi 
