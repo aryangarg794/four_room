@@ -28,6 +28,8 @@ gym.register('MiniGrid-FourRooms-v1', FourRoomsEnv)
 class Args:
     env: gym.Env
     val_env: gym.Env 
+    dir: str = 'test'
+    seed: int = 0
     lr_agent: float = 5e-4
     use_cnn: bool = True
     capacity: int = int(1e5)
@@ -282,6 +284,8 @@ if __name__ == '__main__':
     
     aux_args = Args(
        env=env, 
+       dir=args.dir,
+       seed=args.seed,
        val_env=val_env, 
        lr_agent=args.lr_agent,
        device=args.device,
