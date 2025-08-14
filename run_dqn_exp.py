@@ -212,7 +212,7 @@ def train_dqn_rnd(
                 'uniqueness': uniqueness, 
                 'images': imgs, 
             } 
-            torch.save(results, f'dqn_results/{args.dir}_seed_{args.seed}.pt')
+            torch.save(results, f'results/dqn_exps/{args.dir}_seed_{args.seed}.pt')
         
         uniqueness.append(agent.buffer.ratio_unique_trans)
         pbar.set_description(f"Training RND DQN | Uniqueness: {agent.buffer.ratio_unique_trans:.4f} | Last Regression Exp: {(scores[-1] if len(scores) > 0 else 0):.4f} | Total Items added: {items_added} | Current Context: {current_context}")
@@ -304,7 +304,7 @@ if __name__ == '__main__':
     # with open(f'dqn_results/{args.dir}.pl', 'wb') as file:
     #     dill.dump(results, file)
     
-    torch.save(results, f'dqn_results/{args.dir}_seed_{args.seed}.pt')
+    torch.save(results, f'results/dqn_exps//{args.dir}_seed_{args.seed}.pt')
     if args.render:
         imgs = list(results['images'])
         imageio.mimsave(f'renders/rendered_{args.dir}_seed_{args.seed}.gif', [np.array(img) for i, img in enumerate(imgs[-500:]) if i%1 == 0], duration=150)
