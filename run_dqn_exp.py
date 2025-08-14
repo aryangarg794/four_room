@@ -89,7 +89,7 @@ def train_dqn_rnd(
     env = deepcopy(args.env)
     items_added = 0
     
-    obs, _ = env.reset(seed=seed)
+    obs, _ = env.reset()
     record = False
     state = obs_to_state(obs)
     goal_pos = state[3:5]
@@ -160,7 +160,7 @@ def train_dqn_rnd(
                 
             past_pos = []
             
-            obs, _ = env.reset(seed=seed)
+            obs, _ = env.reset()
             done = False
             state = obs_to_state(obs)
             goal_pos = state[3:5]

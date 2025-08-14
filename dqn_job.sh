@@ -10,12 +10,23 @@
 #SBATCH --error=slurm_%j.err # Set name of error log. %j is the Slurm jobId
 #SBATCH --gres=gpu:1
 
-export APPTAINER_HOME=/tudelft.net/staff-umbrella/ExploreGo Star/containers
+export APPTAINER_CACHEDIR="/tudelft.net/staff-umbrella/ExploreGo Star/apptainer-cache"
+export APPTAINER_HOME="/tudelft.net/staff-umbrella/ExploreGo Star/containers"
 export APPTAINER_NAME=image.sif
-export PROJECT_HOME=/tudelft.net/staff-umbrella/ExploreGo Star/four_room
-export RESULTS_DIR=/tudelft.net/staff-umbrella/ExploreGo Star/four_room/dqn_results
+export PROJECT_HOME="/tudelft.net/staff-umbrella/ExploreGo Star/four_room"
+export RESULTS_DIR="/tudelft.net/staff-umbrella/ExploreGo Star/four_room/dqn_results"
 
 if [ ! -f $APPTAINER_HOME/$APPTAINER_NAME ]; then
     ls $APPTAINER_HOME/$APPTAINER_NAME
     exit 1
 fi 
+
+mkdir /tmp/four_room
+
+srun apptainer exec --nv \
+  --bind ${PROJECT_HOME}:/home/aryan/Documents/Uni/four_room:/mnt/four_room \
+  ${APPTAINER_HOME}/${APPTAINER_NAME} \
+  bash -c "cd /mnt/four_room && python run_dqn_exp.py"
+
+# cleanup
+rm -r /tmp/$USER/

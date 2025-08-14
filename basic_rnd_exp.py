@@ -77,7 +77,7 @@ def train_basic_rnd(
     env = deepcopy(args.env)
     items_added = 0
     
-    obs, _ = env.reset(seed=seed)
+    obs, _ = env.reset()
     record = False
     state = obs_to_state(obs)
     goal_pos = state[3:5]

@@ -9,13 +9,31 @@ from four_room.constants import OBJECT_TO_IDX, TILE_PIXELS
 from four_room.objects import Wall, WorldObj
 from minigrid.utils.rendering import (
     downsample,
-    fill_coords,
     highlight_img,
     point_in_rect,
     point_in_triangle,
     rotate_fn,
 )
 
+
+def fill_coords(img, fn, color):
+    """
+    Fill pixels of an image with coordinates matching a filter function.
+    Supports RGBA colors for transparency blending.
+    """
+    rgba = np.array(color, dtype=float)
+    alpha = rgba[3] if len(rgba) == 4 else 1.0
+    rgb = rgba[:3]
+
+    for y in range(img.shape[0]):
+        for x in range(img.shape[1]):
+            yf = (y + 0.5) / img.shape[0]
+            xf = (x + 0.5) / img.shape[1]
+            if fn(xf, yf):
+                # Blend with existing pixel
+                img[y, x] = (1 - alpha) * img[y, x] + alpha * rgb
+
+    return img
 
 class Grid:
     """
@@ -174,6 +192,7 @@ class Grid:
         
         # Highlight the cell if needed
         if highlight:
+            color = (*color, 0.5)
             fill_coords(img, point_in_rect(0, 1, 0, 1), color)
 
         if obj is not None:
