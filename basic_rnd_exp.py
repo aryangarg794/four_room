@@ -199,17 +199,17 @@ def train_basic_rnd(
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', '--timesteps', type=int, default=int(361), help='timesteps')
+    parser.add_argument('-t', '--timesteps', type=int, default=int(1e6), help='timesteps')
     parser.add_argument('-f', '--dir', type=str, default='test', help='save name')
-    parser.add_argument('-a', '--alpha', type=float, default=1.5, help='alpha')
+    parser.add_argument('-a', '--alpha', type=float, default=1.0, help='alpha')
     parser.add_argument('-d', '--device', type=str, default='cuda', help='device')
     parser.add_argument('-rnd', '--lr_rnd', type=float, default=1e-5, help='lr for rnd')
     parser.add_argument('-r', '--render', action='store_true', help='render mode')
-    parser.add_argument('-s', '--replaysize', type=int, default=int(10), help='size of replay buffer')
+    parser.add_argument('-s', '--replaysize', type=int, default=int(1e5), help='size of replay buffer')
     parser.add_argument('-seed', '--seed', type=int, default=0, help='seed')
     parser.add_argument('-b', '--batch_size', type=int, default=512, help='batch size')
-    parser.add_argument('-fr', '--freq', type=int, default=int(1000), help='freq of regression')
-    parser.add_argument('-tau', '--tau', type=float, default=0.005, help='tau')
+    parser.add_argument('-fr', '--freq', type=int, default=int(1e5), help='freq of regression')
+    parser.add_argument('-tau', '--tau', type=float, default=0.1005, help='tau')
     
     args = parser.parse_args()
     
