@@ -233,7 +233,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--timesteps', type=int, default=int(1e6), help='timesteps')
-    parser.add_argument('-f', '--dir', type=str, default='test', help='save name')
+    parser.add_argument('-f', '--dir', type=str, default='rnd_dqn', help='save name')
     parser.add_argument('-a', '--alpha', type=float, default=1.0, help='alpha')
     parser.add_argument('-rnd', '--lr_rnd', type=float, default=1e-5, help='lr for rnd')
     parser.add_argument('-ag', '--lr_agent', type=float, default=5e-4, help='lr for dqn agent')

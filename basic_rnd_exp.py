@@ -27,7 +27,9 @@ gym.register('MiniGrid-FourRooms-v1', FourRoomsEnv)
 @dataclass
 class Args:
     env: gym.Env
-    val_env: gym.Env 
+    val_env: gym.Env
+    seed: int = 0 
+    dir: str = 'test'
     lr: float = 1e-5
     capacity: int = int(1e5)
     device: str = 'cuda'
@@ -183,7 +185,7 @@ def train_basic_rnd(
                 'images': imgs, 
             } 
             
-            torch.save(results, f'dqn_results/{args.dir}_seed_{args.seed}.pt')
+            torch.save(results, f'results/dqn_exps/{args.dir}_seed_{args.seed}.pt')
         
         uniqueness.append(buffer.ratio_unique_trans)
         pbar.set_description(f"Training RND DQN | Uniqueness: {buffer.ratio_unique_trans:.4f} | Last Regression Exp: {(scores[-1] if len(scores) > 0 else 0):.4f} | Total Items added: {items_added} | Current Context: {current_context} | RND Val: {rnd_val:.4f} | Avg: {rms.avg:.4f} | STD: {rms.std:.4f}")    
@@ -200,7 +202,7 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--timesteps', type=int, default=int(1e6), help='timesteps')
-    parser.add_argument('-f', '--dir', type=str, default='test', help='save name')
+    parser.add_argument('-f', '--dir', type=str, default='basic_rnd', help='save name')
     parser.add_argument('-a', '--alpha', type=float, default=1.0, help='alpha')
     parser.add_argument('-d', '--device', type=str, default='cuda', help='device')
     parser.add_argument('-rnd', '--lr_rnd', type=float, default=1e-5, help='lr for rnd')
@@ -250,7 +252,9 @@ if __name__ == '__main__':
     
     aux_args = Args(
        env=env, 
-       val_env=val_env, 
+       val_env=val_env,
+       seed=args.seed, 
+       dir=args.dir,
        device=args.device,
        capacity=args.replaysize, 
        lr=args.lr_rnd
