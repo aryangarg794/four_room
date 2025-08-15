@@ -186,8 +186,7 @@ def train_basic_rnd(
             torch.save(results, f'dqn_results/{args.dir}_seed_{args.seed}.pt')
         
         uniqueness.append(buffer.ratio_unique_trans)
-        pbar.set_description(f"Training RND DQN | Uniqueness: {buffer.ratio_unique_trans:.4f} | Last Regression Exp: {(scores[-1] if len(scores) > 0 else 0):.4f} | Total Items added: {items_added} | Current Context: {current_context}")
-    
+        pbar.set_description(f"Training RND DQN | Uniqueness: {buffer.ratio_unique_trans:.4f} | Last Regression Exp: {(scores[-1] if len(scores) > 0 else 0):.4f} | Total Items added: {items_added} | Current Context: {current_context} | RND Val: {rnd_val:.4f} | Avg: {rms.avg:.4f} | STD: {rms.std:.4f}")    
     return {
         'buffer': buffer,
         'rnd_net': rnd_net.rnd_net.state_dict(),

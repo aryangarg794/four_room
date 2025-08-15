@@ -217,7 +217,7 @@ def train_dqn_rnd(
             torch.save(results, f'results/dqn_exps/{args.dir}_seed_{args.seed}.pt')
         
         uniqueness.append(agent.buffer.ratio_unique_trans)
-        pbar.set_description(f"Training RND DQN | Uniqueness: {agent.buffer.ratio_unique_trans:.4f} | Last Regression Exp: {(scores[-1] if len(scores) > 0 else 0):.4f} | Total Items added: {items_added} | Current Context: {current_context}")
+        pbar.set_description(f"Training RND DQN | Uniqueness: {agent.buffer.ratio_unique_trans:.4f} | Last Regression Exp: {(scores[-1] if len(scores) > 0 else 0):.4f} | Total Items added: {items_added} | Current Context: {current_context} | RND Val: {dqn_val:.4f} | Avg: {rms.avg:.4f} | STD: {rms.std:.4f}")
     
     return {
         'agent': agent.net.state_dict(),
@@ -234,7 +234,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--timesteps', type=int, default=int(2e5), help='timesteps')
     parser.add_argument('-f', '--dir', type=str, default='test', help='save name')
-    parser.add_argument('-a', '--alpha', type=float, default=1.5, help='alpha')
+    parser.add_argument('-a', '--alpha', type=float, default=1.0, help='alpha')
     parser.add_argument('-rnd', '--lr_rnd', type=float, default=1e-5, help='lr for rnd')
     parser.add_argument('-ag', '--lr_agent', type=float, default=5e-4, help='lr for dqn agent')
     parser.add_argument('-d', '--device', type=str, default='cuda', help='device')
