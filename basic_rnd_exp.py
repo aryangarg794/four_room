@@ -184,7 +184,8 @@ def train_basic_rnd(
                 'images': imgs, 
             } 
             
-            dill.dump(results, f'results/dqn_exps/{args.dir}_seed_{args.seed}_{step}.pt')
+            with open(f'results/dqn_exps/{args.dir}_seed_{args.seed}_{step}.pl', 'wb') as file:
+                dill.dump(results, file)
         
         uniqueness.append(buffer.ratio_unique_trans)
         pbar.set_description(f"Training RND DQN | Uniqueness: {buffer.ratio_unique_trans:.4f} | Last Regression Exp: {(scores[-1] if len(scores) > 0 else 0):.4f} | Total Items added: {items_added} | Current Context: {current_context} | RND Val: {rnd_val:.4f} | Avg: {rms.avg:.4f} | STD: {rms.std:.4f}")
@@ -272,7 +273,9 @@ if __name__ == '__main__':
     # with open(f'dqn_results/{args.dir}.pl', 'wb') as file:
     #     dill.dump(results, file)
     
-    dill.dump(results, f'results/dqn_exps/{args.dir}_seed_{args.seed}.pt')
+    with open(f'results/dqn_exps/{args.dir}_seed_{args.seed}_{args.timesteps}.pl', 'wb') as file:
+        dill.dump(results, file)
+        
     if args.render:
         imgs = list(results['images'])
         imageio.mimsave(f'renders/rendered_{args.dir}_seed_{args.seed}.gif', [np.array(img) for i, img in enumerate(imgs[-500:]) if i%1 == 0], duration=150)
