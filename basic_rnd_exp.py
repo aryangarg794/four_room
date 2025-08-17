@@ -105,7 +105,7 @@ def train_basic_rnd(
         
         q = find_all_action_values(state[:2], state[2], target_pos, state[5:], 0.99, size)
         action = np.array(q).argmax()
-        rnd_val = rnd_net.get_error(obs)
+        rnd_val = rnd_net.get_error(obs).item()
         
         obs_prime, reward, terminated, truncated, _ = env.step(action)
         done = terminated or truncated
