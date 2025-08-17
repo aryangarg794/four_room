@@ -57,7 +57,7 @@ def sweep_maze(net):
                 agent_pos = state[:2]
                 q = find_all_action_values(state[:2], state[2], state[3:5], state[5:], 0.99, size)
                 action = np.array([1])
-                rnd_value = net.get_error(obs, action)
+                rnd_value = net.get_error(obs, action).item()
                 net.observe(obs, action)
                 
                 print(f'Context is {(i)%200:04d} | agent x, y: {agent_pos} | agent dir: {state[2]} | %Diff Prev State: {per:.4f} | RND Val: {rnd_value:.5f}', end='\r')
@@ -111,7 +111,7 @@ def optimal_trajectories(net, window=250):
             
             state = obs_to_state(obs)
             agent_pos = state[:2]
-            rnd_value = net.get_error(obs)
+            rnd_value = net.get_error(obs).item()
             net.observe(obs)
             q = find_all_action_values(state[:2], state[2], state[3:5], state[5:], 0.99, size)
             action = np.array(q).argmax()

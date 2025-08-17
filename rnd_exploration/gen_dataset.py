@@ -86,7 +86,7 @@ def create_explogostar_dataset(
                 q = find_all_action_values(state[:2], state[2], state[3:5], state[5:], 0.99, size)
                 q = np.array(q)
                 action = q.argmax()
-                rnd_val = rnd_net.get_error(obs)
+                rnd_val = rnd_net.get_error(obs).item()
                 
                 
                 if len(explorego) < 5000 and warmup:

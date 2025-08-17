@@ -104,7 +104,7 @@ class RNDNetwork:
             
         with torch.no_grad():
             return self.scale * self.loss(self.rnd_net(states, action), 
-                                          self.target_net(states, action)).sum().item()
+                                          self.target_net(states, action)).sum(dim=-1)
         
     
     def sanitize(self, tensor: Tensor) -> Tensor:

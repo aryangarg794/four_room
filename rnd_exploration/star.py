@@ -96,7 +96,7 @@ def create_star_dataset(
                 q = find_all_action_values(state[:2], state[2], target_pos, state[5:], 0.99, size)
                 q = np.array(q)
                 action = q.argmax()
-                rnd_val = rnd_net.get_error(obs)
+                rnd_val = rnd_net.get_error(obs).item()
                 
                 if record and len(explorego) >= warmupsteps:
                     assert np.array_equal(target_pos, goal_pos)

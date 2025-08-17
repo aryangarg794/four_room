@@ -274,7 +274,7 @@ if __name__ == '__main__':
     # with open(f'dqn_results/{args.dir}.pl', 'wb') as file:
     #     dill.dump(results, file)
     
-    torch.save(results, f'dqn_results/{args.dir}_seed_{args.seed}.pt')
+    torch.save(results, f'results/dqn_exps/{args.dir}_seed_{args.seed}.pt')
     if args.render:
         imgs = list(results['images'])
         imageio.mimsave(f'renders/rendered_{args.dir}_seed_{args.seed}.gif', [np.array(img) for i, img in enumerate(imgs[-500:]) if i%1 == 0], duration=150)

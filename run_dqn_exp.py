@@ -182,14 +182,14 @@ def train_dqn_rnd(
             
         if step % update_freq == 0: 
             batch_obs, batch_actions, _, batch_primes, batch_dones = agent.buffer.sample(batch_size=batch_size)
-            batch_rewards = rnd_net.get_error(batch_obs)
-            
+        
             with torch.no_grad():
+                batch_rewards = rnd_net.get_error(batch_obs).detach().unsqueeze(dim=-1)
                 target_vals = agent.target_net(batch_primes).max(dim=1, keepdim=True)[0]
                 targets = batch_rewards + gamma * target_vals * (1 - batch_dones)
                 
             q_values = agent.net(batch_obs).gather(dim=1, index=batch_actions)
-            loss = mse_loss(q_values, targets)
+            loss = mse_loss(q_values, targets.detach())
             
             agent.optimizer.zero_grad()
             loss.backward()
@@ -308,7 +308,7 @@ if __name__ == '__main__':
     # with open(f'dqn_results/{args.dir}.pl', 'wb') as file:
     #     dill.dump(results, file)
     
-    torch.save(results, f'results/dqn_exps//{args.dir}_seed_{args.seed}.pt')
+    torch.save(results, f'results/dqn_exps/{args.dir}_seed_{args.seed}.pt')
     if args.render:
         imgs = list(results['images'])
         imageio.mimsave(f'renders/rendered_{args.dir}_seed_{args.seed}.gif', [np.array(img) for i, img in enumerate(imgs[-500:]) if i%1 == 0], duration=150)
